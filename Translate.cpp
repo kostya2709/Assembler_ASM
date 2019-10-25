@@ -1,231 +1,265 @@
-#include "Asm_Head.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <dir.h>
+#include "main_lib.h"
 
-int Find_Code (char* name, command com[MAX_COM], int com_num, int* in_code);
+int Byte_Write_Str (void* val, char* str, int size);
 
-int Byte_Write (void* val, FILE* f, int size);
+char* Write_Down_Args (int args_num, char** comms, char* buf_w_ptr, char* name, int num_of_cur_line, int com_amount, int* lab_num, label* lab, char* buf_w);
 
-char* Insert_File_Name (void);
+label* Label_Construct (int label_num, int label_name_size);
 
-char* Take_File_Path (int level);
+int Label_Exist (char* name, int lab_count, label* lab);
 
-int Translate (char* file_name, command com[MAX_COM], int com_num)
+int Make_Labels (char* lab_name, int* lab_num, label* lab, char* buf_w_ptr, char* buf_w, char type);
+
+int Translate (char* file_name)
 {
     assert (file_name);
 
     const char txt[5] = ".txt";
     const char assm[5] = ".asm";
-    const char txt1[10] = "_code.txt";
 
     char file[100] = {};
     strcpy (file, file_name);
     char file1[100] = {};
     strcpy (file1, file_name);
-    char file2[100] = {};
-    strcpy (file2, file_name);
 
     char* read = strcat (file, txt);
     char* write_asm = strcat (file1, assm);
-    char* write_txt = strcat (file2, txt1);
 
     FILE* f = fopen (read, "r");
     if (!f)
     {
+        printf ("File is %s\n", read);
         printf ("This file doesn't exist!\n");
         abort();
     }
     FILE* fa = fopen (write_asm, "w");
-    FILE* ft = fopen (write_txt, "w");
 
 
-    char* buf_r = (char*)calloc (1, MAX_COM * MAX_COM_NAME);
-    char* buf_r_ptr = buf_r;
+    long num_lines = 0;
+    long num_symb = 0;
+    char* buf_r = File_Reader (read, &num_lines, &num_symb);
+    poem_line* buf_l = StringMaker (buf_r, num_symb, num_lines);
 
-    char* buf_w = (char*)calloc (1, MAX_COM * MAX_COM_NAME);
+    int buf_w_size = num_symb;
+    char* buf_w = (char*)calloc (1, buf_w_size);
     char* buf_w_ptr = buf_w;
 
-
-    char cur_com[MAX_COM_NAME] = {};
     int code = -1;
     int in_code = 0;
-    int val = 0;
 
-    int j = 0;
+    label* lab = Label_Construct (50, 15);
+    int lab_num = 0;
+    int num_of_cur_line = 0;
 
     while (true)
     {
-        fscanf (f, "%s", &cur_com);
         in_code = 0;
+        int com_amount = 0;
 
-        code = Find_Code (cur_com, com, com_num, &in_code);
-        if (code == -1)
-            printf ("Unidentified operator\n");
-        fprintf (fa, "%c", (char)code);
-        fprintf (ft, "%d ", code);
-
-        if (in_code == 1)
+        if (buf_l[num_of_cur_line].start == buf_l[num_of_cur_line].end)
         {
-            fscanf (f, "%d", &val);
-            fprintf (ft, "%d", val);
-            Byte_Write (&val, fa, sizeof(in_code));
+            num_of_cur_line++;
+            continue;
         }
 
-        fprintf (ft, "\n");
 
-        if (!strcmp (cur_com, com[0].name))
-            break;
+        char** comms = Divide_Str (Change_Symb (buf_l[num_of_cur_line].start, '\t', ' '), &com_amount, ' ');
+
+
+        if (com_amount == 0)
+        {
+            num_of_cur_line++;
+            continue;
+        }
+printf ("%s %d %d, %d\n", *comms, Str_Length (*comms), buf_w_ptr - buf_w, buf_w_size);
+        com_amount--;
+
+    #define ASM_CMD( name, num, args_num, code)                     \
+    else if (strcmp (*comms, #name) == 0)                           \
+    {                                                               \
+        *(buf_w_ptr) = (char)num;                                   \
+        buf_w_ptr++;                                                \
+                                                                    \
+        buf_w_ptr = Write_Down_Args (args_num, comms, buf_w_ptr, #name, num_of_cur_line, com_amount, &lab_num, lab, buf_w); \
+                                                                        \
+        if (num == 0)                                                   \
+            break;                                                      \
+                                                                        \
+        num_of_cur_line++;                                              \
+                                                                        \
     }
 
-    fclose (f);
-}
+    if (false);
 
-int Find_Code (char* name, command com[MAX_COM], int com_num, int* in_code)
-{
-    assert (name);
-    assert (in_code);
+    #include "..\Commands_Header.h"
+
+    else if (type_of_str (*comms) == 'l')
+    {
+        Make_Labels (*comms, &lab_num, lab, buf_w_ptr, buf_w, 'l');
+
+        num_of_cur_line++;
+    }
+    else
+    {
+            printf ("Unidentified operator in line %d.\nIt is %s\nIts type is %c\nIts size is %d\n\n", num_of_cur_line + 1, *comms, type_of_str (*comms), Str_Length(*comms));
+            abort();
+    }
+
+    #undef ASM_CMD
+
+    int cur_length = buf_w_ptr - buf_w;
+    if (buf_w_size - cur_length <= 50)
+    {
+        buf_w_size *= 2;
+        buf_w = (char*)realloc (buf_w, buf_w_size);
+        buf_w_ptr = buf_w + cur_length;
+    }
+
+    free (buf_l[num_of_cur_line - 1].start);
+    free (comms);
+
+    }
 
     int i = 0;
-    for (i = 0; i < com_num; i++)
+    for (i = 0; i < lab_num; i++)
     {
-        if (strcmp (com[i].name, name) == 0)
+        int temp_to = lab[i].where_to_jmp;
+        int k = 0;
+        for (k = 0; k < lab[i].jmp_count; k++)
         {
-            *in_code = i;
-            return com[i].code;
+            Byte_Write_Str(&temp_to, buf_w + *(lab[i].where_from_jmp + k), sizeof (int));
         }
 
     }
-    return -1;
+
+
+    fwrite (buf_w, buf_w_ptr - buf_w, 1, fa);
+    fclose (fa);
+    fclose (f);
+
+    return 0;
 }
 
-int Byte_Write (void* val, FILE* f, int size)
+int Byte_Write_Str (void* val, char* str, int size)
 {
     assert (val);
 
     int i = 0;
     for (i = 0; i < size; i++)
-        fprintf (f, "%c", (char)*((char*)val + i));
+        *(str + i) = (char)*((char*)val + i);
+
     return 0;
 }
 
-char* Insert_File_Name (command com[MAX_COM])
+char* Write_Down_Args (int args_num, char** comms, char* buf_w_ptr, char* name, int num_of_cur_line, int com_amount, int* lab_num, label* lab, char* buf_w)
 {
-    printf ("Press '0' to run a default program \"asm_progs\\coms1\".\n");
-    printf ("Press '1' to create an assembler program right now!\n");
-    printf ("Or enter your file name (without spaces) to compile from \"asm_progs\" folder.\n\n");
 
-    char* file_n = (char*)calloc (1,255);
-    char default_f[100] = "program_qq";
-    char scanf_is_my_love[40] = {};
-    char adress[255] = "asm_progs\\";
-    char* path = (char*)calloc (1,255);
-    path = Take_File_Path (2);
-    char slash[2] = {};
-    slash[0] = '\\';
-
-    scanf ("%s", &scanf_is_my_love);
-
-    if (scanf_is_my_love[0] == '1' && scanf_is_my_love[1] == '\0')
-    {
-        strcat(path, adress);
-        strcpy (file_n, Create_File (path, com));
-    }
-
-    else if (scanf_is_my_love[0] == '0' && scanf_is_my_love[1] == '\0')
-    {
-        strcat (adress, default_f);
-        strcat (adress, slash);
-        strcat(path, adress);
-        strcpy (file_n, strcat (path, default_f));
-    }
-
-    else
-    {
-        strcat (adress, scanf_is_my_love);
-        strcat (adress, slash);
-        strcat(path, adress);
-        strcpy(file_n, strcat (path, scanf_is_my_love));
-    }
-
-    return file_n;
-}
-
-char* Take_File_Path (int level)
-{
-    char* path = (char*)calloc(1,255);
-    strcpy (path, __FILE__);
-
-    int count = level;
-    char* ptr = path;
-    while (*ptr++);
-    while (count)
-    {
-        if (*ptr == '\\')
-            count--;
-        if (count) *ptr = '\0';
-        ptr--;
-    }
-
-    ptr = path;
-
-    return ptr;
-}
-
-char* Create_File (char* adress, command com[MAX_COM])
-{
-    printf ("Insert the name of the new file! (Without spaces and extension)\n");
-    char file_n[255] = {};
-    scanf ("%s", &file_n);
-    printf ("Great! And now just insert your commands!\n");
-
-    char space = ' ';
-    char slash = '\n';
-    char slash1[2] = {};
-    slash1[0] = '\\';
-
-    char path[255] = {};
-    strcpy (path, adress);
-    strcat (path, file_n);
-
-    if (mkdir (path) == 0)
-        ;
-    else perror("Error");
-
-    strcat (path, slash1);
-    strcat (path, file_n);
-
-    char path1[255] = {};
-    strcpy (path1, path);
-    char txt[5] = ".txt";
-    strcat (path1, txt);
-
-    FILE* f = fopen (path1, "w");
-
-    char a_command[MAX_COM_NAME] = {};
-    int val = 0;
-
-    while (true)
-    {
-        scanf ("%s", &a_command);
-        fputs (a_command, f);
-
-        if (!strcmp (com[1].name, a_command))
+    if (com_amount != args_num)
         {
-            fputc (space, f);
-            scanf ("%d", &val);
-            fprintf (f, "%d", val);
+                printf ("Invalid number of arguments, function %s, line %d.\n"
+                "Valid number is %d. Your current number is %d.\n",name, num_of_cur_line + 1, args_num, com_amount);
+                abort();
+
         }
-        fprintf (f, "%c", slash);
 
-        if (!strcmp (com[0].name, a_command))
-            break;
-    }
+        int i = 0;
+        if (args_num > 0)
+            for (i = 0; i < args_num; i++)
+                {
+                    if (type_of_str (*(comms + 1)) == 'd')
+                        *buf_w_ptr = 1;
 
-    fclose (f);
+                    else if (type_of_str (*(comms + 1)) == 's')
+                    {
+                            *buf_w_ptr = Str_Length (*(comms + 1));
+                    }
+                    else if (type_of_str (*(comms + 1)) == 'l')
+                        ;
+                    else { printf ("Invalid type of argument!\n"
+                         "Command %s, line %d.\n", name, num_of_cur_line + 1); abort();}
+                    buf_w_ptr++;
+                }
 
-    char* ptr = path;
-    return ptr;
+            for (i = 1; i < com_amount + 1; i++)
+            if (type_of_str (*(comms + i)) == 'd')
+            {
+                int temp = atoi (*(comms + i));
+                Byte_Write_Str(&temp, buf_w_ptr, sizeof (temp));
+                buf_w_ptr += sizeof (temp);
+            }
+            else if (type_of_str (*(comms + i)) == 's')
+            {
+                int len = Str_Length (*(comms + i));
+                Byte_Write_Str (*(comms + i), buf_w_ptr, len);
+                buf_w_ptr += len;
+            }
+            else if (type_of_str (*(comms + 1)) == 'l')
+                    {
+                        int temp = -1;
+                        buf_w_ptr--;
+                        Make_Labels(*(comms + 1), lab_num, lab, buf_w_ptr, buf_w, 'j');
+                        Byte_Write_Str(&temp, buf_w_ptr, sizeof (temp));
+                        buf_w_ptr += sizeof (int);
+                    }
+
+            return buf_w_ptr;
+}
+
+label* Label_Construct (int label_num, int label_name_size)
+{
+        label* lab = (label*) calloc (1,label_name_size + sizeof (int) + sizeof(char*) * label_num );
+        int i = 0;
+        for (i = 0; i < label_num; i++)
+        {
+            lab[i].name = (char*)calloc (1, label_name_size);
+            lab[i].where_from_jmp = (int*)calloc (sizeof(int), label_num);
+            lab[i].where_to_jmp = -1;
+        }
+        return lab;
+}
+
+int Make_Labels (char* lab_name, int* lab_num, label* lab, char* buf_w_ptr, char* buf_w, char type)
+{
+#define new_label \
+lab[*lab_num].name = lab_name;      \
+lab[*lab_num].where_to_jmp = buf_w_ptr - buf_w; \
+*lab_num += 1;
+
+        if (type == 'l')
+        {
+            int state = Label_Exist (lab_name, *lab_num, lab);
+            if (state == -1)
+            {
+                new_label
+            }
+
+            lab[state].where_to_jmp = buf_w_ptr - buf_w;
+        }
+
+        else if (type == 'j')
+        {
+            int state = Label_Exist (lab_name, *lab_num, lab);
+            if (state == -1)
+            {
+                new_label
+                state = 0;
+            }
+
+            *(lab[state].where_from_jmp + lab[state].jmp_count) = (int)(buf_w_ptr - buf_w);
+            lab[state].jmp_count += 1;
+        }
+
+#undef new_label
+
+    return 0;
+
+}
+
+int Label_Exist (char* name, int lab_count, label* lab)
+{
+    int i = 0;
+    for (i = 0; i < lab_count; i++)
+        if (strcmp (lab[i].name, name) == 0)
+            return i;
+    return -1;
 }

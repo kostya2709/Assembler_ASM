@@ -1,16 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <math.h>
-#include "File_Reader.h"
+#include "main_lib.h"
 
 #ifdef Debug
 #define PRINTF printf
 #else
 #define PRINTF if (0) printf
 #endif // My_Debug
-
-char* File_Reader (char* file_name, long* num_lines, long* num_symb);
 
 char* Create_Str (long* length, const char* file_read);
 

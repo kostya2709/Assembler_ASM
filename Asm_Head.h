@@ -1,22 +1,30 @@
-const int MAX_COM = 10;
+const int MAX_COM = 500;
 
 const int MAX_COM_NAME = 10;
 
-struct command
+struct label
 {
-	char name[MAX_COM_NAME];
-	int code;
+    char* name;
+    int where_to_jmp;
+    int* where_from_jmp;
+    int jmp_count;
 };
 
-int Code_Read (command* com, int* max);
+int Translate (char* file_name);
 
-int Translate (char* file_name, command com[MAX_COM], int com_num);
-
-char* Insert_File_Name (command com[MAX_COM]);
+char* Insert_File_Name (void);
 
 char* Take_File_Path (int level);
 
-char* Create_File (char* adress, command com[MAX_COM]);
+char* Create_File (char* adress);
+
+char type_of_str (char* str);
+
+char* Change_Symb (char* str, char bad, char good);
+
+char** Divide_Str (char* str, int* number, char divide_symb);
+
+long Str_Length (char* str);
 
 /*
 end 0
@@ -25,4 +33,5 @@ add 2
 min 3
 mul 4
 div 5
+pop 6
 */

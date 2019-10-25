@@ -13,10 +13,6 @@ char* File_Reader (char* file_name, long* num_lines, long* num_symb);
 
 poem_line* StringMaker (char* str, int length, int amount);
 
-char Down (char c);
-
 int WriteFile (const char *file, int num, poem_line pointer[]);
-
-poem_line* Point_Maker (int length);
 
 char* Create_Str (long* length, const char* file_read);
