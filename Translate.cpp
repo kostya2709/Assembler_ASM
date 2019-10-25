@@ -62,16 +62,16 @@ int Translate (char* file_name)
             continue;
         }
 
-
+        char* temp_str = Change_Symb (buf_l[num_of_cur_line].start, '\t', ' ');
+//printf ("cur = %s\n", temp_str);
         char** comms = Divide_Str (Change_Symb (buf_l[num_of_cur_line].start, '\t', ' '), &com_amount, ' ');
-
 
         if (com_amount == 0)
         {
             num_of_cur_line++;
             continue;
         }
-printf ("%s %d %d, %d\n", *comms, Str_Length (*comms), buf_w_ptr - buf_w, buf_w_size);
+printf ("com = %s, len = %d, dp = %d, buf %d, com_amount %d\n", *comms, Str_Length (*comms), buf_w_ptr - buf_w, buf_w_size, com_amount);
         com_amount--;
 
     #define ASM_CMD( name, num, args_num, code)                     \
@@ -108,15 +108,16 @@ printf ("%s %d %d, %d\n", *comms, Str_Length (*comms), buf_w_ptr - buf_w, buf_w_
     #undef ASM_CMD
 
     int cur_length = buf_w_ptr - buf_w;
-    if (buf_w_size - cur_length <= 50)
+    /*if (buf_w_size - cur_length <= 50)
     {
         buf_w_size *= 2;
         buf_w = (char*)realloc (buf_w, buf_w_size);
         buf_w_ptr = buf_w + cur_length;
-    }
+        printf ("change\n");
+    }*/
 
-    free (buf_l[num_of_cur_line - 1].start);
-    free (comms);
+    //free (buf_l[num_of_cur_line - 1].start);
+    //free (comms);
 
     }
 
@@ -184,7 +185,7 @@ char* Write_Down_Args (int args_num, char** comms, char* buf_w_ptr, char* name, 
             if (type_of_str (*(comms + i)) == 'd')
             {
                 int temp = atoi (*(comms + i));
-                Byte_Write_Str(&temp, buf_w_ptr, sizeof (temp));
+                Byte_Write_Str (&temp, buf_w_ptr, sizeof (temp));
                 buf_w_ptr += sizeof (temp);
             }
             else if (type_of_str (*(comms + i)) == 's')
@@ -197,8 +198,8 @@ char* Write_Down_Args (int args_num, char** comms, char* buf_w_ptr, char* name, 
                     {
                         int temp = -1;
                         buf_w_ptr--;
-                        Make_Labels(*(comms + 1), lab_num, lab, buf_w_ptr, buf_w, 'j');
-                        Byte_Write_Str(&temp, buf_w_ptr, sizeof (temp));
+                        Make_Labels (*(comms + 1), lab_num, lab, buf_w_ptr, buf_w, 'j');
+                        Byte_Write_Str (&temp, buf_w_ptr, sizeof (temp));
                         buf_w_ptr += sizeof (int);
                     }
 
