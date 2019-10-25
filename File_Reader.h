@@ -1,8 +1,4 @@
-#ifdef Debug
-#define PRINTF printf
-#else
-#define PRINTF if (0) printf
-#endif // My_Debug
+
 
 typedef struct {
     char* start;

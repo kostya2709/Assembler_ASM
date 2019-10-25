@@ -63,7 +63,7 @@ int Translate (char* file_name)
         }
 
         char* temp_str = Change_Symb (buf_l[num_of_cur_line].start, '\t', ' ');
-//printf ("cur = %s\n", temp_str);
+
         char** comms = Divide_Str (Change_Symb (buf_l[num_of_cur_line].start, '\t', ' '), &com_amount, ' ');
 
         if (com_amount == 0)
@@ -71,7 +71,9 @@ int Translate (char* file_name)
             num_of_cur_line++;
             continue;
         }
-printf ("com = %s, len = %d, dp = %d, buf %d, com_amount %d\n", *comms, Str_Length (*comms), buf_w_ptr - buf_w, buf_w_size, com_amount);
+
+        PRINTF ("com = %s, len = %d, dp = %d, buf %d, com_amount %d\n", *comms, Str_Length (*comms), buf_w_ptr - buf_w, buf_w_size, com_amount);
+
         com_amount--;
 
     #define ASM_CMD( name, num, args_num, code)                     \
@@ -133,6 +135,10 @@ printf ("com = %s, len = %d, dp = %d, buf %d, com_amount %d\n", *comms, Str_Leng
 
     }
 
+    for (i = 0; i < lab_num; i++)
+    {
+        PRINTF ("name = %s, where_to = %d, counter = %d\n", lab[i].name, lab[i].where_to_jmp, lab[i].jmp_count);
+    }
 
     fwrite (buf_w, buf_w_ptr - buf_w, 1, fa);
     fclose (fa);
@@ -243,7 +249,7 @@ lab[*lab_num].where_to_jmp = buf_w_ptr - buf_w; \
             if (state == -1)
             {
                 new_label
-                state = 0;
+                state = *lab_num - 1;
             }
 
             *(lab[state].where_from_jmp + lab[state].jmp_count) = (int)(buf_w_ptr - buf_w);
