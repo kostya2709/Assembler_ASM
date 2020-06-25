@@ -21,8 +21,14 @@ This is the file with some functions to ask a file to read assembler code from.
 ## string_lib.cpp
 An auxilary file with some additional string functions.
 
+
+
 ## Examples
-This a short program which reads two number, sums them, and displays the result.
+
+
+This a short program which reads two number, sums them up, and displays the result.
+
+
 
 ```
 	jmp main:	
@@ -50,3 +56,8 @@ This a short program which reads two number, sums them, and displays the result.
 	end
   
   ```
+  
+  This code is translated into this byte-code:
+  ![byte-code](https://github.com/kostya2709/Assembler_ASM/blob/master/Examples/sum/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%20%D0%BE%D1%82%202020-06-25%2013-54-37.png)
+
+You can see more examples in the folder "Examples".
