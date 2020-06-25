@@ -1,6 +1,6 @@
 # Assembler_ASM
 
-# Desription
+# Desсription
 
 This project is an emulation of a translator from an assembly code to the byte code of a processor.
 
