@@ -1,0 +1,199 @@
+	// This program solves square equations! Just insert your coefficients!
+
+	begin:
+
+
+	outf "\n\nLet's solve a square equation!\n\n\n"
+	outf "Insert square equation coefficients!\n"
+
+	outf "\nInsert a:\n\n"
+	in
+	pop ax  	// a
+
+	outf "\nInsert b:\n\n"
+	in 
+	pop bx 		//b
+
+	outf "\nInsert_c:\n\n"
+	in
+	pop cx 		//c
+
+	outf "\n"
+
+	push 0
+	
+	push ax
+	
+	je a==0:
+	jmp a!=0:
+	
+	a==0:	//a == 0;
+	push 0
+	push bx
+	je b==0:	//b == 0?
+	jmp b!=0:
+	
+	b==0:
+	push 0
+	push cx
+	je c==0_&_b==0:
+	jmp c!=0_&_b==0:
+
+	b!=0:
+	push 0
+	push cx
+	je c==0_&_b!=0:
+	jmp c!=0_&_b!=0:
+
+	c==0_&_b==0:
+	outf "There are infinity of roots of the equation!\n\n"
+	jmp end:
+
+	c!=0_&_b==0:
+	outf "There are no roots of the equation!\n\n"
+	jmp end:
+
+	c==0_&_b!=0:
+	outf "There is only one root of the equation!\n\n"
+	outf "x = 0\n"
+	jmp end:
+
+	c!=0_&_b!=0:
+	outf "There is only one root of the equation!\n\n"
+	push cx
+	push bx
+	div
+	push -1
+	mul
+	outf "x = "
+	out
+	outf "\n"
+	jmp end:
+
+	// a != 0
+
+	a!=0:	
+		// D
+	push bx
+	push bx
+	mul
+	push 4
+	push ax
+	push cx
+	mul
+	mul
+	min
+	pop dx		//D = b * b - 4 * a *c
+
+	push dx
+
+	dump
+
+	push 0
+	jl D<0:
+	push dx
+	push 0
+	je D=0:
+	push dx
+	push 0
+	jmp D>0:
+
+	D<0:
+	outf "Oh, this equation was hard!\n\n"
+	outf "There are two complex roots!\n\n"
+	push dx
+	push -1
+	mul
+	sqrt		
+	push 2
+	div
+	push ax
+	div
+	pop dx		//√D / (2 * a)
+
+	push bx
+	push -1
+	mul
+	push 2
+	push ax
+	mul
+	div
+	pop bx		// - b / (2 * a)
+
+	push bx
+	outf "The first root is:\n\n"
+	outf "x = "
+	out
+	push dx
+	outf " - i * "
+	out
+	
+	push bx
+	outf "\n\nThe second root is:\n\n"
+	outf "x = "
+	out
+	push dx
+	outf " + i * "
+	out
+	outf "\n\n"
+	jmp end:
+
+
+	D=0:
+	push bx
+	push -1
+	mul
+	push 2
+	push ax
+	mul
+	div
+	pop bx		// - b / (2 * a)
+	
+	push bx
+	outf "There is one root of the equaton:\n\n"
+	outf "x = "
+	out
+	outf "\n\n"
+	jmp end:
+
+	D>0:
+	outf "There are two roots of the equation!\n\n"
+	push dx
+	sqrt		
+	push 2
+	div
+	push ax
+	div
+	pop dx		//√D / (2 * a)
+
+	push bx
+	push -1
+	mul
+	push 2
+	push ax
+	mul
+	div
+	pop bx		// - b / (2 * a)
+
+	outf "The first root is:\n\n"
+	outf "x = "
+	push bx
+	push dx
+	min
+	out
+	
+	outf "\n\nThe second root is:\n\n"
+	outf "x = "
+	push bx
+	push dx
+	add
+	out
+	outf "\n\n"
+	jmp end:
+	
+
+	end:
+
+	jmp begin:
+
+	end

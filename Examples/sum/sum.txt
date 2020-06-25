@@ -1,0 +1,23 @@
+	jmp main:	
+
+	f_sum:
+	push ax
+	push bx
+	add
+	ret
+	
+	main:
+	outf "Insert a\n\n"
+	in
+	pop ax
+	outf "Insert b\n\n"
+	in 
+	pop bx
+
+
+	call f_sum:
+	
+	outf "The sum is:\n\n"
+	out
+	end:
+	end

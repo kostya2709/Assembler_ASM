@@ -1,0 +1,73 @@
+jmp main:
+
+
+	func_Narr:
+
+		pop ax			// result
+		pop nx			// argument
+
+		push nx
+		push 3
+		jle nx<=3:		// (n <= 3)?
+
+		push nx
+		push 1
+		min
+		push 1
+		
+		call func_Narr:
+		pop ax			// ax = Narrayana ( n - 1)
+		pop nx   		// nx = n - 1
+		push nx
+		push ax
+
+		push nx
+		push 2
+		min 			// nx = n - 3
+		push 1
+		
+		call func_Narr:
+
+		pop bx			// bx = Narrayana ( n - 3)
+		pop nx
+		pop ax
+		pop cx
+
+
+		push nx
+		push 3
+		add
+
+		push ax
+		push bx
+		add
+
+		ret
+
+
+		nx<=3:		// Narrayana (n)  (n <= 3) == 1;
+
+		push nx
+		push 1
+
+		ret
+
+	ret
+
+
+
+main:
+
+outf "\n\nInsert a number:\n\n"
+
+in
+push 0
+
+call func_Narr:
+
+outf "\n\nThe answer is:\n\n"
+out
+
+jmp main:
+
+end
